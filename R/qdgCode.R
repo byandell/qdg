@@ -50,7 +50,7 @@ qdgAlgo <- function(cross,
       UDG <- UDG[as.numeric(tmp1) < as.numeric(tmp2), ]
       names(UDG) <- paste("node", 1:2, sep = "")
       UDG$edge <- 1
-      class(UDG) <- c("QDG", "data.frame")
+      class(UDG) <- c("qdg", "data.frame")
       attr(UDG, "edgemode") <- "undirected"
       attr(UDG, "message") <- ""
       attr(UDG, "cont") <- 0
@@ -261,7 +261,7 @@ qdgAlgo <- function(cross,
         DG[i,4] <- s
       }
       names(DG) <- c("node1", "direction", "node2", "lod score")
-      class(DG) <- c("QDG", "data.frame")
+      class(DG) <- c("qdg", "data.frame")
       attr(DG, "edgemode") <- "directed"
       DG
     }
@@ -543,7 +543,7 @@ qdgAlgo <- function(cross,
           cp <- cp + 1
         }
       }
-      class(UDG) <- c("QDG", "data.frame")
+      class(UDG) <- c("qdg", "data.frame")
       attr(UDG, "edgemode") <- "undirected"
       attr(UDG, "message") <- ""
       attr(UDG, "cont") <- 0
@@ -553,7 +553,9 @@ qdgAlgo <- function(cross,
   #################################################
   pheno.data <- cross$pheno[,phenotype.names]
   if(skel.method == "pcskel"){
-    pcskeleton <- pcAlgo(pheno.data, alpha)
+    require(pcalg)
+    
+    pcskeleton <- pcAlgo(pheno.data, alpha = alpha)
     UDG <- transformPCtoUDG(pcskeleton)
     UDG <- renameUDG(selpheno=phenotype.names,UDG=UDG)
   }
@@ -784,7 +786,7 @@ print.qdgSEM <- function(x, ...) summary(x, ...)
 
 
 
-plot.qdg <- function(x, simple = FALSE, breaks = c(1,3,10,20),
+graph.qdg <- function(x, simple = FALSE, breaks = c(1,3,10,20),
                          col = c(pos.color="green", neg.color="red", pheno.color="yellow",
                          qtl.color="magenta"),include.qtl=TRUE,
                          ...)
@@ -964,8 +966,7 @@ plot.qdg <- function(x, simple = FALSE, breaks = c(1,3,10,20),
   names(pheno.output) <- c(names(x$Solutions$solutions[[best]]),"path")
   if(simple){
     mygR <- create.directed.graph.object(pheno.output)
-    myattrs <- list(node=list(shape="ellipse"))
-    return( plot(mygR, attrs = myattrs, ...) )
+    mygR[[4]] <- myattrs <- list(node=list(shape="ellipse"))
   }
   else{
     if(include.qtl){
@@ -992,13 +993,18 @@ plot.qdg <- function(x, simple = FALSE, breaks = c(1,3,10,20),
                                    pheno.color = col["pheno.color"],
                                    qtl.color = col["qtl.color"])
     }
-    ## Plot the graph object.
-    return( plot(mygR[[1]], edgeAttrs = mygR[[2]], nodeAttrs = mygR[[3]],
-            attrs = mygR[[4]], "dot", ...) )
   }
+  mygR
 }
 
-
+plot.qdg <- function(x, graph = graph.qdg(x, ...), ...)
+{
+  require(Rgraphviz)
+  
+  ## Plot the graph object.
+  plot(mygR[[1]], edgeAttrs = mygR[[2]], nodeAttrs = mygR[[3]],
+       attrs = mygR[[4]], "dot", ...)
+}
 
 
 

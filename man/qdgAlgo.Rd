@@ -139,7 +139,13 @@ out <- qdgAlgo(cross=mycross,
 		skel.method="pcskel")
 
 out
-plot(out)
+gr <- graph.qdg(out)
+edges(gr$graph)
+edgeWeights(gr$graph)
+\dontrun{
+## Requires Rgraphviz.
+plot(out, graph = gr)
+}
 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
